@@ -1,0 +1,63 @@
+menuconfig FB_XYLON
+	tristate "Xylon logiCVC frame buffer support"
+	depends on FB
+	default n
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+	help
+	  Choose this option if you want to use the Xylon logiCVC as frame
+	  buffer device. Without the support of PCI & AGP.
+
+choice
+	prompt "Xylon frame buffer driver type"
+	depends on FB_XYLON
+	default FB_XYLON_PLATFORM
+
+config FB_XYLON_PLATFORM
+	bool "Xylon logiCVC frame buffer platform driver"
+	help
+	  Choose this option if you want to use the Xylon frame buffer driver
+	  as platform driver type. This is selected by default.
+
+config FB_XYLON_OF
+	bool "Xylon logiCVC frame buffer Open Firmware driver"
+	help
+	  Choose this option if you want to use the Xylon frame buffer driver
+	  as Open Firmware driver type.
+endchoice
+
+config FB_XYLON_PIXCLK
+	bool "Xylon logiCVC pixel clock generation"
+	depends on FB_XYLON
+	default n
+	help
+	  logiCVC pixel clock from:
+	  - External generator (default)
+	  - Generators controllable by Xylon framebuffer driver
+
+config FB_XYLON_PIXCLK_ZYNQ_PS
+	bool "Zynq PS PLL pixel clock generator"
+	depends on FB_XYLON && FB_XYLON_PIXCLK
+	default n
+	help
+	  Support for pixel clock generation from Zynq-PS internal PLL
+	  clock generator.
+
+config FB_XYLON_PIXCLK_LOGICLK
+	bool "Xylon logiCLK pixel clock generator"
+	depends on FB_XYLON && FB_XYLON_PIXCLK
+	default n
+	help
+	  Support for pixel clock generation from Xylon logiCLK FGPA IP core.
+
+config FB_XYLON_PIXCLK_SI570
+	bool "SI570 pixel clock generator"
+	depends on FB_XYLON && FB_XYLON_PIXCLK
+	default n
+	select SYSFS
+	select I2C
+	select MISC_DEVICES
+	select SI570
+	help
+	  Support for pixel clock generation from SI570 clock generator.
