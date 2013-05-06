@@ -73,7 +73,7 @@ static irqreturn_t i2s_irq_handler(int irq, void *priv)
 	struct snd_i2s_pcm_port *i2s_pcm;
 	struct snd_pcm_substream *substream;
 	struct snd_pcm_runtime *runtime;
-	unsigned long ir, data_xfer;
+	unsigned long ir, data_xfer, size;
 	int i;
 
 	driver_devel("\n");
@@ -90,12 +90,17 @@ static irqreturn_t i2s_irq_handler(int irq, void *priv)
 				runtime = substream->runtime;
 				if (runtime) {
 					if (runtime->dma_area) {
+						if ((i2s_pcm->buf_pos + (port->fifo_size * 4)) < i2s_pcm->buf_size) {
+							size = 0;
+						} else {
+							size = (i2s_pcm->buf_size - i2s_pcm->buf_pos) / 4;
+						}
 						data_xfer = logii2s_port_transfer_data(port,
-							(unsigned long *)(runtime->dma_area + i2s_pcm->buf_pos));
-
+							(unsigned long *)(runtime->dma_area + i2s_pcm->buf_pos),
+							size);
 						i2s_pcm->buf_pos += data_xfer;
-						i2s_pcm->buf_pos %= i2s_pcm->buf_size;
-
+						if (i2s_pcm->buf_pos >= (i2s_pcm->buf_size - 1))
+							i2s_pcm->buf_pos = 0;
 						snd_pcm_period_elapsed(substream);
 					}
 				}
@@ -159,6 +164,8 @@ static void xylon_i2s_start(struct snd_i2s_pcm_port *i2s_pcm)
 static void xylon_i2s_stop(struct snd_i2s_pcm_port *i2s_pcm)
 {
 	driver_devel("\n");
+
+	logii2s_port_disable_xfer(i2s_pcm->i2s_port);
 
 	if (i2s_pcm->xfer_dir == LOGII2S_TX_INSTANCE) {
 		logii2s_port_mask_int(i2s_pcm->i2s_port, LOGII2S_INT_MASK_ALL);

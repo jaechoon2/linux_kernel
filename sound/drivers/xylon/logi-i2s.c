@@ -458,7 +458,7 @@ void logii2s_port_write_fifo(struct logii2s_port *port,
 *
 ******************************************************************************/
 unsigned long logii2s_port_transfer_data(struct logii2s_port *port,
-    unsigned long *data)
+    unsigned long *data, unsigned long size)
 {
     unsigned int direction;
     unsigned int samples;
@@ -473,6 +473,11 @@ unsigned long logii2s_port_transfer_data(struct logii2s_port *port,
         } else {
             samples = 0;
         }
+        if (size != 0) {
+            if ((samples != 0) && (size < samples)) {
+                samples = size;
+            }
+        }
         logii2s_port_write_fifo(port, data, samples);
         logii2s_port_clear_isr(port, (LOGII2S_INT_FE | LOGII2S_INT_FAE));
     } else if (direction == LOGII2S_RX_INSTANCE) {
@@ -483,50 +488,16 @@ unsigned long logii2s_port_transfer_data(struct logii2s_port *port,
         } else {
             samples = 0;
         }
+        if (size != 0) {
+            if ((samples != 0) && (size < samples)) {
+                samples = size;
+            }
+        }
         logii2s_port_read_fifo(port, data, samples);
         logii2s_port_clear_isr(port, (LOGII2S_INT_FF | LOGII2S_INT_FAF));
-    }
-    else
-    {
+    } else {
         return 0;
     }
 
     return samples * 4;
-}
-
-/**
-*
-* This function performs data transfer with specified number of data bytes
-* to or from FIFO register.
-*
-* @param    port is a pointer to the logii2s_port structure.
-* @param    data is a pointer to 32-bit value data for writing or reading the
-*           FIFO register.
-* @param    size is number of data bytes for transfer.
-*
-* @return   Number of transfered bytes.
-*
-* @note     None.
-*
-******************************************************************************/
-unsigned long logii2s_port_transfer_data_size(struct logii2s_port *port,
-    unsigned long *data, unsigned long size)
-{
-    unsigned int direction;
-
-    direction = logii2s_port_direction(port);
-
-    if (direction == LOGII2S_TX_INSTANCE) {
-        logii2s_port_write_fifo(port, data, size);
-        logii2s_port_clear_isr(port, (LOGII2S_INT_FAE | LOGII2S_INT_FE));
-    } else if (direction == LOGII2S_RX_INSTANCE) {
-        logii2s_port_read_fifo(port, data, size);
-        logii2s_port_clear_isr(port, (LOGII2S_INT_FAF | LOGII2S_INT_FE));
-    }
-    else
-    {
-        return 0;
-    }
-
-    return size * 4;
 }

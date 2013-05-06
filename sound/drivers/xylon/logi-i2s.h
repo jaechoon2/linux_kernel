@@ -117,7 +117,7 @@
 #define LOGII2S_FIFO_SIZE         512
 #define LOGII2S_FIFO_SIZE_MAX     4096
 /* Default FIFO levels */
-#define LOGII2S_ALMOST_EMPTY_SIZE 80 
+#define LOGII2S_ALMOST_EMPTY_SIZE 80
 #define LOGII2S_ALMOST_FULL_SIZE  170
 /* Default I2S system hw clocks */
 #define LOGII2S_SYSTEM_CLOCK 100000000
@@ -188,8 +188,6 @@ void logii2s_port_read_fifo(struct logii2s_port *port,
 void logii2s_port_write_fifo(struct logii2s_port *port,
     unsigned long *data, unsigned long count);
 unsigned long logii2s_port_transfer_data(struct logii2s_port *port,
-    unsigned long *data);
-unsigned long logii2s_port_transfer_data_size(struct logii2s_port *port,
     unsigned long *data, unsigned long size);
 
 #endif /* __LOGII2S_H__ */
