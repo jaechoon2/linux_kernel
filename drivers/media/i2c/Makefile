@@ -1,0 +1,2 @@
+
+obj-$(CONFIG_VIDEO_ADV7511) += adv7511.o

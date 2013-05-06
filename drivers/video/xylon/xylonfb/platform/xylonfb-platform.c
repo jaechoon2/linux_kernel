@@ -4,8 +4,8 @@
  * Author: Xylon d.o.o.
  * e-mail: davor.joja@logicbricks.com
  *
- * This driver was based on skeletonfb.c and other fb video drivers.
- * 2012 Xylon d.o.o.
+ * This driver was primarily based on skeletonfb.c and other fb video drivers.
+ * 2013 Xylon d.o.o.
  *
  * This file is licensed under the terms of the GNU General Public License
  * version 2.  This program is licensed "as is" without any warranty of any
@@ -34,14 +34,14 @@ static void xylonfb_get_platform_layer_params(
 		lfdata->alpha_mode = LOGICVC_LAYER_ALPHA;
 
 	switch (lfdata->bpp) {
-		case 8:
-			if (lfdata->alpha_mode == LOGICVC_PIXEL_ALPHA)
-				lfdata->bpp = 16;
-			break;
-		case 16:
-			if (lfdata->alpha_mode == LOGICVC_PIXEL_ALPHA)
-				lfdata->bpp = 32;
-			break;
+	case 8:
+		if (lfdata->alpha_mode == LOGICVC_PIXEL_ALPHA)
+			lfdata->bpp = 16;
+		break;
+	case 16:
+		if (lfdata->alpha_mode == LOGICVC_PIXEL_ALPHA)
+			lfdata->bpp = 32;
+		break;
 	}
 
 	lfdata->layer_fix_info = id;
@@ -77,7 +77,8 @@ static int xylonfb_platform_probe(struct platform_device *pdev)
 			&pdata->layer_params[i],
 			&init_data.lfdata[i], i);
 		init_data.lfdata[i].width = pdata->row_stride;
-		init_data.layer_ctrl_flags[i] = pdata->layer_params[i].ctrl_flags;
+		init_data.layer_ctrl_flags[i] =
+			pdata->layer_params[i].ctrl_flags;
 	}
 
 	return xylonfb_init_driver(&init_data);
@@ -89,11 +90,19 @@ static int xylonfb_platform_remove(struct platform_device *pdev)
 }
 
 
+void xylonfb_platform_release(struct device *dev)
+{
+	return;
+}
+
+
 /* logiCVC parameters for Xylon Zynq-ZC702 2D3D referent design */
-static struct xylonfb_platform_layer_params logicvc_0_layer_params[] = {
+static struct xylonfb_platform_layer_params
+	logicvc_0_layer_params[] = {
 	{
 		.offset = 7290,
 		.buffer_offset = 1080,
+		.type = LOGICVC_RGB_LAYER,
 		.bpp = 32,
 		.alpha_mode = LOGICVC_PIXEL_ALPHA,
 		.ctrl_flags = 0,
@@ -101,6 +110,7 @@ static struct xylonfb_platform_layer_params logicvc_0_layer_params[] = {
 	{
 		.offset = 4050,
 		.buffer_offset = 1080,
+		.type = LOGICVC_RGB_LAYER,
 		.bpp = 32,
 		.alpha_mode = LOGICVC_LAYER_ALPHA,
 		.ctrl_flags = 0,
@@ -108,6 +118,7 @@ static struct xylonfb_platform_layer_params logicvc_0_layer_params[] = {
 	{
 		.offset = 0,
 		.buffer_offset = 1080,
+		.type = LOGICVC_RGB_LAYER,
 		.bpp = 32,
 		.alpha_mode = LOGICVC_LAYER_ALPHA,
 		.ctrl_flags = 0,
@@ -115,6 +126,7 @@ static struct xylonfb_platform_layer_params logicvc_0_layer_params[] = {
 	{
 		.offset = 12960,
 		.buffer_offset = 1080,
+		.type = LOGICVC_RGB_LAYER,
 		.bpp = 8,
 		.alpha_mode = LOGICVC_CLUT_32BPP_ALPHA,
 		.ctrl_flags = 0,
@@ -133,7 +145,14 @@ static struct xylonfb_platform_data logicvc_0_platform_data = {
 	.active_layer = 3,
 	.bg_layer_bpp = 32,
 	.bg_layer_alpha_mode = LOGICVC_LAYER_ALPHA,
-	.display_interface_type = (LOGICVC_DI_PARALLEL << 4) | (LOGICVC_DCS_YUV422),
+	.display_interface_type =
+		(LOGICVC_DI_PARALLEL << 4) | (LOGICVC_DCS_YUV422),
+	/*
+		Available flags:
+		LOGICVC_READABLE_REGS
+		XYLONFB_FLAG_EDID_VMODE
+		XYLONFB_FLAG_EDID_PRINT
+	*/
 	.flags = 0,
 };
 
@@ -155,6 +174,7 @@ static struct platform_device logicvc_0_device = {
 	.id = 0,
 	.dev = {
 		.platform_data = &logicvc_0_platform_data,
+		.release = xylonfb_platform_release,
 	},
 	.resource = logicvc_0_resource,
 	.num_resources = ARRAY_SIZE(logicvc_0_resource),
@@ -171,7 +191,7 @@ static struct platform_driver xylonfb_driver = {
 };
 
 
-static int __init xylonfb_platform_init(void)
+static int xylonfb_platform_init(void)
 {
 	int err;
 

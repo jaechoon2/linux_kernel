@@ -4,7 +4,7 @@
  * Author: Xylon d.o.o.
  * e-mail: davor.joja@logicbricks.com
  *
- * 2012 (c) Xylon d.o.o.
+ * 2013 Xylon d.o.o.
  *
  * This file is licensed under the terms of the GNU General Public License
  * version 2.  This program is licensed "as is" without any warranty of any
@@ -164,8 +164,12 @@
 #define LOGICVC_LAYER_ON               0x01
 #define LOGICVC_SWAP_RB                0x10
 #define LOGICVC_MAX_LAYERS             5
+#define LOGICVC_MAX_LAYER_BUFFERS      3
+#define LOGICVC_MIN_XRES               64
 #define LOGICVC_MAX_XRES               2048
-#define LOGICVC_MAX_VRES               4096
+#define LOGICVC_MIN_VRES               1
+#define LOGICVC_MAX_VRES               2048
+#define LOGICVC_MAX_LINES              4096
 #define LOGICVC_CLUT_SIZE              256
 #define TRANSPARENT_COLOR_8BPP         0x25       /* dummy */
 #define TRANSPARENT_COLOR_8BPP_CLUT_16 0xF813     /* dummy */
@@ -174,11 +178,11 @@
 #define TRANSPARENT_COLOR_24BPP        0x00FF009C /* dummy */
 #define BACKGROUND_COLOR               0x00000000
 
-#define LOGICVC_READABLE_REGS 0x100
+#define LOGICVC_READABLE_REGS 0x01
 
 enum xylonfb_layer_type {
 	LOGICVC_RGB_LAYER = 0,
-	LOGICVC_YCbCr_LAYER,
+	LOGICVC_YCBCR_LAYER,
 	LOGICVC_ALPHA_LAYER
 };
 

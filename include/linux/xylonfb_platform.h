@@ -4,7 +4,7 @@
  * Author: Xylon d.o.o.
  * e-mail: davor.joja@logicbricks.com
  *
- * 2012 (c) Xylon d.o.o.
+ * 2013 Xylon d.o.o.
  *
  * This file is licensed under the terms of the GNU General Public License
  * version 2.  This program is licensed "as is" without any warranty of any
@@ -19,8 +19,7 @@
 
 
 /* Framebuffer driver platform layer structure */
-struct xylonfb_platform_layer_params
-{
+struct xylonfb_platform_layer_params {
 	/* Layer memory offset in lines */
 	unsigned int offset;
 	/* Layer buffer memory offset in lines */
@@ -36,8 +35,7 @@ struct xylonfb_platform_layer_params
 };
 
 /* Framebuffer driver platform data structure */
-struct xylonfb_platform_data
-{
+struct xylonfb_platform_data {
 	struct xylonfb_platform_layer_params *layer_params;
 	/* logiCVC video mode */
 	char *vmode;
@@ -47,10 +45,10 @@ struct xylonfb_platform_data
 	unsigned long vmem_base_addr;
 	/* Physical ending address of the video memory */
 	unsigned long vmem_high_addr;
-	/* logiCVC pixel clock source id */
-	unsigned char pixclk_src_id;
 	/* Layer row stride in pixels */
 	unsigned short row_stride;
+	/* ID of driver supported pixel clock generator */
+	unsigned char pixclk_src_id;
 	/* Number of logiCVC layers */
 	unsigned char num_layers;
 	/* logiCVC layer ID for FB console */
@@ -60,7 +58,8 @@ struct xylonfb_platform_data
 	/* Background layer alpha mode */
 	unsigned char bg_layer_alpha_mode;
 	/* Display interface and color space type */
-	/* higher 4 bits: display interface, lower 4 bits: display color space */
+	/* higher 4 bits: display interface
+	   lower 4 bits: display color space */
 	unsigned char display_interface_type;
 	/* logiCVC specific flags */
 	unsigned short flags;

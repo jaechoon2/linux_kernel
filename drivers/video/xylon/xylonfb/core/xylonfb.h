@@ -4,7 +4,7 @@
  * Author: Xylon d.o.o.
  * e-mail: davor.joja@logicbricks.com
  *
- * 2012 (c) Xylon d.o.o.
+ * 2013 Xylon d.o.o.
  *
  * This file is licensed under the terms of the GNU General Public License
  * version 2.  This program is licensed "as is" without any warranty of any
@@ -17,29 +17,39 @@
 
 #include <linux/wait.h>
 #include <linux/mutex.h>
+#include <linux/notifier.h>
 #include <linux/fb.h>
+#include <linux/xylonfb.h>
 #include "logicvc.h"
 
 
 #define DRIVER_NAME "xylonfb"
 #define DEVICE_NAME "logicvc"
 #define DRIVER_DESCRIPTION "Xylon logiCVC frame buffer driver"
-#define DRIVER_VERSION "1.3"
+#define DRIVER_VERSION "2.0"
 
-/* FB driver flags */
-#define XYLONFB_DMA_BUFFER        0x01
-#define XYLONFB_MEMORY_LE         0x02
-#define XYLONFB_VMODE_INIT        0x10
-#define XYLONFB_DEFAULT_VMODE_SET 0x20
-#define XYLONFB_VMODE_SET         0x40
-#define XYLONFB_PIXCLK_VALID      0x80
-#define XYLONFB_RESERVED_0x100    0x100
+/* XylonFB driver flags */
+#define XYLONFB_FLAG_RESERVED_0x01     LOGICVC_READABLE_REGS
+#define XYLONFB_FLAG_DMA_BUFFER        0x02
+#define XYLONFB_FLAG_MEMORY_LE         0x04
+#define XYLONFB_FLAG_PIXCLK_VALID      0x08
+#define XYLONFB_FLAG_VMODE_INIT        0x10
+#define XYLONFB_FLAG_EDID_VMODE        0x20
+#define XYLONFB_FLAG_EDID_PRINT        0x40
+#define XYLONFB_FLAG_DEFAULT_VMODE_SET 0x80
+#define XYLONFB_FLAG_VMODE_SET         0x100
+/*
+	Following flags must be updated in xylonfb miscellaneous
+	header files for every functionality specifically
+*/
+#define XYLONFB_FLAG_MISC_ADV7511 0x1000
+#define XYLONFB_FLAG_EDID_RDY     0x2000
+#define XYLONFB_EDID_SIZE         256
+#define XYLONFB_EDID_WAIT_TOUT    60
+
 
 #ifdef DEBUG
-#define driver_devel(format, ...) \
-	do { \
-		printk(KERN_INFO format, ## __VA_ARGS__); \
-	} while (0)
+#define driver_devel(format, ...) pr_info(format, ## __VA_ARGS__);
 #else
 #define driver_devel(format, ...)
 #endif
@@ -54,6 +64,7 @@ struct xylonfb_vmode_data {
 };
 
 struct xylonfb_registers {
+	u32 ctrl_reg;
 	u32 dtype_reg;
 	u32 bg_reg;
 	u32 unused_reg[3];
@@ -100,29 +111,34 @@ struct xylonfb_sync {
 };
 
 struct xylonfb_common_data {
-	struct device *dev;
 	struct mutex irq_mutex;
 	struct xylonfb_register_access reg_access;
 	struct xylonfb_registers *reg_list;
-	struct xylonfb_sync xylonfb_vsync;
+	struct xylonfb_sync vsync;
 	struct xylonfb_vmode_data vmode_data;
 	struct xylonfb_vmode_data vmode_data_current;
+	struct blocking_notifier_head xylonfb_notifier_list;
+	struct notifier_block xylonfb_nb;
 	/* Delay after applying display power and
 		before applying display signals */
 	unsigned int power_on_delay;
 	/* Delay after applying display signal and
 		before applying display backlight power supply */
 	unsigned int signal_on_delay;
-	unsigned short xylonfb_flags;
-	unsigned char pixclk_src_id;
-	unsigned char layers;
+	unsigned long xylonfb_flags;
+	unsigned char xylonfb_pixclk_src_id;
+	unsigned char xylonfb_layers;
 	unsigned char xylonfb_irq;
 	unsigned char xylonfb_use_ref;
-	unsigned char xylonfb_used_layer;
-	unsigned char bg_layer_bpp;
-	unsigned char bg_layer_alpha_mode;
-	/* higher 4 bits: display interface, lower 4 bits: display color space */
-	unsigned char display_interface_type;
+	unsigned char xylonfb_console_layer;
+	unsigned char xylonfb_bg_layer_bpp;
+	unsigned char xylonfb_bg_layer_alpha_mode;
+	/* higher 4 bits: display interface
+	   lower 4 bits: display color space */
+	unsigned char xylonfb_display_interface_type;
+#if defined(CONFIG_FB_XYLON_MISC)
+	struct xylonfb_misc_data *xylonfb_misc;
+#endif
 };
 
 struct xylonfb_layer_data {
@@ -158,6 +174,10 @@ struct xylonfb_init_data {
 	bool vmode_params_set;
 };
 
+
+/* xylonfb core pixel clock interface functions */
+extern bool xylonfb_hw_pixclk_supported(int);
+extern int xylonfb_hw_pixclk_set(int, unsigned long);
 
 /* xylonfb core interface functions */
 extern int xylonfb_get_params(char *options);
