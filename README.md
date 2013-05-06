@@ -1,16 +1,21 @@
 linux_kernel
 ============
 
-logiCVC, logiWIN, logiI2S drivers for Xilinx ARM Linux kernel version:
+logiCVC, logiWIN, logiI2S drivers for Linux kernel version:
 
 VERSION = 3
 
-PATCHLEVEL = 5
+PATCHLEVEL = 8
 
-SUBLEVEL = 0
+SUBLEVEL = 4
 
-EXTRAVERSION = -14.3-build2
+EXTRAVERSION =
 
-Copy all driver source, header, Kconfig and Makefile files from git folder tree to the Xilinx ARM Linux kernel tree at same places.
+Copy all driver source, header files from git folder tree to the Linux kernel tree at same places.
+Kconfig and Makefile contain snippets which must be added to original Linux kernel Kconfig and Makefile.
 
-More details about configuring, building and running Xilinx ARM Linux kernel can be found at http://wiki.xilinx.com/zynq-linux
+Device drivers support OpenFirmware functionality.
+Devicetree examples can be found in Documentation folder.
+
+Device drivers are developed and used under ARM architecture (Xilinx Zynq)
+and x86 architecture (i7, Atom).
