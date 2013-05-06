@@ -1,0 +1,40 @@
+logiwin {
+	compatible = "xylon,logiwin-3.02.g";
+	reg = <0x40010000 0x1000>,
+		  <0x40020000 0x1000>,
+		  <0x40030000 0x1000>;
+	interrupts = <0 58 4>,
+				 <0 57 4>,
+				 <0 56 4>;
+	interrupt-parent = <&gic>;
+	logiwin_0 {
+		vmem-address = <0x310E0000 0xCA8000>;
+		vmem-buffer = <2048 3240>;
+		input-num = <1>;
+		input-resolution = <1280 720>;
+		input-format = <1>;
+		output-format = <4>;
+		out-byte-align = <1>;
+		scale-fraction-bits = <6>;
+	};
+	logiwin_1 {
+		vmem-address = <0x31D88000 0xCA8000>;
+		vmem-buffer = <2048 3240>;
+		input-num = <1>;
+		input-resolution = <1280 720>;
+		input-format = <1>;
+		output-format = <4>;
+		out-byte-align = <1>;
+		scale-fraction-bits = <6>;
+	};
+	logiwin_2 {
+		vmem-address = <0x32A30000 0xCA8000>;
+		vmem-buffer = <2048 3240>;
+		input-num = <1>;
+		input-resolution = <1920 1080>;
+		input-format = <1>;
+		output-format = <4>;
+		out-byte-align = <1>;
+		scale-fraction-bits = <6>;
+	};
+};

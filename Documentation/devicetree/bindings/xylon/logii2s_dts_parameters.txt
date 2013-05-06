@@ -1,0 +1,50 @@
+logii2s0: logii2s@40060000 {
+	compatible = "xylon,logii2s-2.00.a";
+	reg = <0x40060000 0x1000>;
+	interrupts = <0 53 4>;
+	interrupt-parent = <&gic>;
+	instances = <7>;
+	system-clock-frequency = <100000000>;
+	instance_0 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_1 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_2 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_3 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_4 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_5 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+	instance_6 {
+		i2s-clock-frequency = <12000000>;
+		fifo-size = <2048>;
+		almost-full-level = <680>;
+		almost-empty-level = <85>;
+	};
+};
