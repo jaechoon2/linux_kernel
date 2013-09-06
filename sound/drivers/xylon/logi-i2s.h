@@ -96,6 +96,8 @@
 #define LOGII2S_CTRL_SWR       0x00000004
 /* Not used Mask */
 #define LOGII2S_CTRL_NONE      0x00000008
+/* Left/right channel swap */
+#define LOGII2S_CTRL_LRSWAP    0x01000000
 /* I2S instance is clock master */
 #define LOGII2S_CTRL_CLKMASTER 0x10000000
 /* I2S instance is word select master */
@@ -140,8 +142,8 @@ struct logii2s_port {
 
 /* struct logii2s_device private parameter structure */
 struct logii2s_device {
-	unsigned long regs_base_phys;
-	unsigned long regs_size;
+    unsigned long regs_base_phys;
+    unsigned long regs_size;
     void *regs_base_virt;
     struct logii2s_port **port;
     int irq;

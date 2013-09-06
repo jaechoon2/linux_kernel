@@ -186,51 +186,102 @@ ssm2603_init_error:
 #ifdef VT1603_CODEC
 
 #define I2C_VT1603_ADDR 0x1A
+#define CONFIG_NUM 5
 
 static void vt1603_set_sample_rate(int sample_rate)
 {
+	struct audio_codec_configuration vt1603_config[][CONFIG_NUM] = {
+		{
+			{0x03, 0x44},
+			{0x05, 0xC4},
+			{0x40, 0xF3},
+			{0x41, 0x0B},
+			{0x42, 0x0C},
+		},
+		{
+			{0x03, 0x04},
+			{0x05, 0xC0},
+			{0x40, 0x70},
+			{0x41, 0x02},
+			{0x42, 0x07},
+		}
+	};
+	int adapter_id = 0;
+	struct i2c_adapter *adapter;
+	struct i2c_msg msg;
+	int i;
+	int config_index;
+
+	u8 data_buff[2];
+	if(sample_rate == 48000) 
+		config_index = 1;
+	else
+		config_index = 0;
+
+	for(adapter_id = 0 ; adapter_id  <= 1 ; adapter_id++) {
+		adapter = i2c_get_adapter(adapter_id);
+		if (!adapter) {
+			pr_err("%s - no I2C device\n", __func__);
+			return;
+		}
+
+		msg.addr = I2C_VT1603_ADDR;
+		msg.flags = 0;
+		msg.len = 0;
+		msg.buf = data_buff;
+		for(i = 0; i < CONFIG_NUM; i++) {
+			msg.buf[0] = vt1603_config[config_index][i].address;
+			msg.buf[1] = vt1603_config[config_index][i].data;
+			if (set_device_reg(adapter, &msg, 2) < 0)
+				goto vt1603_init_error;
+		}
+	}
+	return;
+
+vt1603_init_error:
+	pr_err("VT1603 error at A 0x%X D 0x%X\n", msg.buf[0], msg.buf[1]);
 }
 
 static void vt1603_init(unsigned int i2c_adapter_id)
 {
 	struct audio_codec_configuration vt1603_config[] = {
 		{0xc2, 0x01},
-		{0x15, 0xff}, // Software reset for codec part
+		{0x15, 0xff},  // Software reset for codec part
 		{0x15, 0x00},
-		{0x60, 0x04}, // Reset codec analog part
+		{0x60, 0x04},  // Reset codec analog part
 		{0x19, 0x2a},  //master mode 24bit  I2S
 		{0x07, 0xc0},  //L 0dB
 		{0x08, 0xc0},  //R 0dB
 		{0x05, 0xc0},  //gain, update, pu aow, sample rate
-		{0x0a, 0x41}, // hpf en(parameterized)
-		{0x0b, 0x40}, // L2L, R2R, unmute
-		{0x0c, 0x00}, // volume -36dB
-		{0x0f, 0x93}, // DRC disable, DRC 48k SR
-		{0x28, 0x00}, // EQ disable
+		{0x0a, 0x41},  //hpf en(parameterized)
+		{0x0b, 0x40},  //L2L, R2R, unmute
+		{0x0c, 0x00},  //volume  -36dB
+		{0x0f, 0x93},  //DRC disable,  DRC 48k SR
+		{0x28, 0x00},  //EQ disable
 		{0x40, 0x70},  //clk enable
 		{0x41, 0x02},  //DAC_DIV=clk_sys/2
 		{0x42, 0x07},  //bclk=clk_sys/8
 		{0x62, 0xF4},  // Enable and un-mute DAC
 		{0x68, 0x4c},  //100% HP local current, hp output enable and hp unmute
 		//{0x6e, 0x34},  //NCP setting
-		{0x69, 0x93}, // driver input select
+		{0x69, 0x93},  // driver input select
 		{0x7a, 0x18},
 		{0x00, 0xd0},  //DC-Remove, 0dB shift gain
 		{0x01, 0x57},  //unmute, LADC gain
 		{0x02, 0x57},  //unmute, RADC gain
-		{0x03, 0x04}, // 48k SR, L2L, R2R
-		{0x04, 0x00}, // default
+		{0x03, 0x04},  //48k SR, L2L, R2R
+		{0x04, 0x00},  //default
 		{0x60, 0xcc},  //vmid: 50k div, vref enable, micbias enable, mic_det enable
 		{0x61, 0xf9},  // Enable VREF_SC_DA  4X/4 bias current
-		{0x63, 0xe4}, // L/R ADC enable, 30u AAF local current, 50u SDM current
-		{0x64, 0x17}, // Lpga gain=0dB, zero cross
+		{0x63, 0xe4},  //L/R ADC enable, 30u AAF local current, 50u SDM current
+		{0x64, 0x17},  //Lpga gain=0dB, zero cross
 		{0x65, 0x17},  //Rpga gain=0dB, zero cross
 		{0x66, 0x1E},  //pga not mute, L/R analog in channel enable
 		{0x8e, 0xCf},  //L/R input form micin enable, timeout enable
-		{0x92, 0x0c}, // bandgap on(default), micbias=90%AVDD
+		{0x92, 0x0c},  //bandgap on(default), micbias=90%AVDD
 		{0x88, 0x28},
 		{0x19, 0x2A},  //full loop
-		{0x93, 0x20}, //add offset
+		{0x93, 0x20},  //add offset
 		{0x67, 0xf6},
 		{0x25, 0x3c}
 	};

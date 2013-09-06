@@ -5,9 +5,9 @@ logiCVC, logiWIN, logiI2S drivers for Linux kernel version:
 
 VERSION = 3
 
-PATCHLEVEL = 8
+PATCHLEVEL = 10
 
-SUBLEVEL = 4
+SUBLEVEL = 0
 
 EXTRAVERSION =
 

@@ -105,7 +105,6 @@ void logiwin_mask_int(struct logiwin_priv *lw, unsigned long mask)
 /**
 *
 * Reads logiWIN interrupt status register.
-* @param    mask is a interrupt bit mask.
 *
 * @param    lw is a pointer to the logiWIN device parameter structure.
 *

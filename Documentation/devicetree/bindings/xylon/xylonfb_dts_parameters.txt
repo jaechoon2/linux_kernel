@@ -52,7 +52,9 @@ logicvc0: logicvc@40030000 {
 	pixel-component-format = "ARGB";
 	pixel-component-layer = <0>,<1>,<2>;
 	active-layer = <0>;
-	videomode = "1920x1080";
+	//Videomode timing options:
+	//M - CVT; R - reduced blanking; i - interlaced; m - margins
+	videomode = "1920x1080MR";
 	edid {
 		//Set to "1" for configuring logiCVC according to display device EDID
 		preffered-videomode = <0>;

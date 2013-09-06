@@ -33,7 +33,6 @@
 
 #include "logi-i2s.h"
 
-//#define DEBUG
 #ifdef DEBUG
 #define driver_devel(f, x...) \
 	do { \
@@ -366,7 +365,7 @@ static void xylon_i2s_private_free(struct snd_pcm *pcm)
 	kfree(i2s_pcm);
 }
 
-static int __devinit xylon_i2s_pcm_new(struct snd_i2s_pcm_port *i2s_pcm,
+static int __init xylon_i2s_pcm_new(struct snd_i2s_pcm_port *i2s_pcm,
 	struct snd_card *card, int id)
 {
 	struct snd_pcm *pcm;
@@ -411,7 +410,7 @@ static int __devinit xylon_i2s_pcm_new(struct snd_i2s_pcm_port *i2s_pcm,
 	return 0;
 }
 
-static int __devinit xylon_i2s_get_device_parameters(
+static int __init xylon_i2s_get_device_parameters(
 	struct platform_device *pdev, struct logii2s_device *logii2s_dev)
 {
 #ifdef CONFIG_OF
@@ -453,7 +452,7 @@ static int __devinit xylon_i2s_get_device_parameters(
 	return 0;
 }
 
-static void __devinit xylon_i2s_get_port_parameters(
+static void __init xylon_i2s_get_port_parameters(
 	struct platform_device *pdev, struct logii2s_port *port, int id)
 {
 #ifdef CONFIG_OF
@@ -505,7 +504,7 @@ static void __devinit xylon_i2s_get_port_parameters(
 #endif
 }
 
-static int __devinit xylon_i2s_probe(struct platform_device *pdev)
+static int xylon_i2s_probe(struct platform_device *pdev)
 {
 	struct resource *iomem;
 	struct logii2s_device *logii2s_dev;
@@ -654,7 +653,7 @@ err_mem:
 	return err;
 }
 
-static int __devexit xylon_i2s_remove(struct platform_device *pdev)
+static int __exit xylon_i2s_remove(struct platform_device *pdev)
 {
 	struct snd_card *card = platform_get_drvdata(pdev);
 	struct logii2s_device *logii2s_dev = card->private_data;
@@ -679,7 +678,7 @@ static int __devexit xylon_i2s_remove(struct platform_device *pdev)
 }
 
 #ifdef CONFIG_OF
-static struct of_device_id xylon_i2s_of_match[] __devinitdata = {
+static struct of_device_id xylon_i2s_of_match[] = {
 	{ .compatible = "xylon,logii2s-2.00.a" },
 	{ /* end of table */}
 };
@@ -695,7 +694,7 @@ static struct platform_driver xylon_i2s_platform_driver = {
 #endif
 	},
 	.probe = xylon_i2s_probe,
-	.remove = __devexit_p(xylon_i2s_remove),
+	.remove = __exit_p(xylon_i2s_remove),
 };
 
 static int __init xylon_i2s_init(void)

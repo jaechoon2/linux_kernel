@@ -12,7 +12,7 @@ choice
 	default FG_XYLON_LW
 
 config FG_XYLON_LW
-	bool "Xylon logiWIN frame grabber"
+	tristate "Xylon logiWIN frame grabber"
 	depends on VIDEO_FG_XYLON
 	help
 	  Support for Xylon logiWIN frame grabber.

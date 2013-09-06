@@ -1253,7 +1253,7 @@ logiwin_get_params_error:
 }
 #endif
 
-static int __devinit logiwin_probe(struct platform_device *pdev)
+static int logiwin_probe(struct platform_device *pdev)
 {
 	struct logiwin **win;
 	struct logiwin_platform_data *lw_pdata;
@@ -1451,7 +1451,7 @@ err_handle:
 	return err;
 }
 
-static int __devexit logiwin_remove(struct platform_device *pdev)
+static int __exit logiwin_remove(struct platform_device *pdev)
 {
 	struct logiwin **win = platform_get_drvdata(pdev);
 	int num_of_devices = pdev->num_resources / 2;
@@ -1476,7 +1476,7 @@ static int __devexit logiwin_remove(struct platform_device *pdev)
 /*---------------------------------------------------------------------------*/
 
 #ifdef CONFIG_OF
-static struct of_device_id logiwin_of_match[] __devinitdata = {
+static struct of_device_id logiwin_of_match[] = {
 	{ .compatible = "xylon,logiwin-3.02.g" },
 	{ /* end of table */}
 };
@@ -1492,7 +1492,7 @@ static struct platform_driver logiwin_driver = {
 #endif
 	},
 	.probe = logiwin_probe,
-	.remove = __devexit_p(logiwin_remove),
+	.remove = __exit_p(logiwin_remove),
 };
 
 

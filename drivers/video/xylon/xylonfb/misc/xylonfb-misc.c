@@ -26,6 +26,9 @@ static void xylonfb_misc_adv7511(struct fb_info *fbi, bool init)
 
 	driver_devel("%s\n", __func__);
 
+	if (cd->xylonfb_flags & XYLONFB_FLAG_ADV7511_SKIP)
+		return;
+
 	if (init) {
 		if (cd->xylonfb_flags & XYLONFB_FLAG_MISC_ADV7511)
 			return;
@@ -33,6 +36,8 @@ static void xylonfb_misc_adv7511(struct fb_info *fbi, bool init)
 		if (!xylonfb_adv7511_register(fbi)) {
 			fbi->monspecs = *(misc_data->monspecs);
 			cd->xylonfb_flags |= XYLONFB_FLAG_MISC_ADV7511;
+		} else {
+			pr_warn("Warning xylonfb ADV7511 already initialized\n");
 		}
 	} else {
 		xylonfb_adv7511_unregister(fbi);

@@ -14,6 +14,7 @@
  */
 
 
+#include <linux/interrupt.h>
 #include <linux/atomic.h>
 #include <linux/workqueue.h>
 #include <linux/completion.h>
@@ -63,13 +64,11 @@ static void xylonfb_adv7511_get_monspecs(u8 *edid,
 		pr_info("Display Information (EDID)\n");
 		pr_info("========================================\n");
 		pr_info("EDID Version %d.%d\n",
-			(int)monspecs->version,
-			(int)monspecs->revision);
+			(int)monspecs->version, (int)monspecs->revision);
 		pr_info("Manufacturer: %s\n", monspecs->manufacturer);
 		pr_info("Model: %x\n", monspecs->model);
 		pr_info("Serial Number: %u\n", monspecs->serial);
-		pr_info("Year: %u Week %u\n",
-			monspecs->year, monspecs->week);
+		pr_info("Year: %u Week %u\n", monspecs->year, monspecs->week);
 		pr_info("Display Characteristics:\n");
 		pr_info("   Monitor Operating Limits from EDID\n");
 		pr_info("   H: %d-%dKHz V: %d-%dHz DCLK: %dMHz\n",
@@ -267,50 +266,48 @@ static void xylonfb_adv7511_notify(struct v4l2_subdev *sd,
 		}
 		break;
 	case ADV7511_EDID_DETECT:
-		if ((*(xfb_adv7511->xfb_flags) & XYLONFB_FLAG_EDID_VMODE) &&
-			!atomic_read(&xfb_adv7511->edid_lock)) {
-			nd.ed = arg;
-			driver_devel("ADV7511 EDID%sread\n",
-				nd.ed->present ? " " : " not ");
-			if (nd.ed->present) {
-				atomic_set(&xfb_adv7511->edid_lock, 1);
-				pr_debug("EDID segment: %d\n", nd.ed->segment);
+		if (*(xfb_adv7511->xfb_flags) & XYLONFB_FLAG_EDID_VMODE) {
+			if (!atomic_read(&xfb_adv7511->edid_lock)) {
+				nd.ed = arg;
+				driver_devel("ADV7511 EDID%sread\n",
+					nd.ed->present ? " " : " not ");
+				if (nd.ed->present) {
+					atomic_set(&xfb_adv7511->edid_lock, 1);
+					pr_debug("EDID segment: %d\n", nd.ed->segment);
 
-				memset(xfb_adv7511->edid, 0, XYLONFB_EDID_SIZE);
+					memset(xfb_adv7511->edid, 0, XYLONFB_EDID_SIZE);
 
-				sd_edid.pad = 0;
-				sd_edid.start_block = 0;
-				sd_edid.blocks = 1;
-				sd_edid.edid = xfb_adv7511->edid;
-				ret = xfb_adv7511->sd->ops->core->ioctl(sd,
-					VIDIOC_SUBDEV_G_EDID,
-					(void *)&sd_edid);
-				if (ret) {
-					pr_warn("xylonfb ADV7511 IOCTL error %d\n",
-						ret);
-					break;
+					sd_edid.pad = 0;
+					sd_edid.start_block = 0;
+					sd_edid.blocks = 1;
+					sd_edid.edid = xfb_adv7511->edid;
+					ret = xfb_adv7511->sd->ops->core->ioctl(
+						sd, VIDIOC_SUBDEV_G_EDID, (void *)&sd_edid);
+					if (ret) {
+						pr_warn("xylonfb ADV7511 IOCTL error %d\n", ret);
+						break;
+					}
+
+					fb_parse_edid(xfb_adv7511->edid,
+						xfb_adv7511->var_screeninfo);
+					xylonfb_adv7511_get_monspecs(xfb_adv7511->edid,
+						xfb_adv7511->monspecs, xfb_adv7511->var_screeninfo);
+					xylonfb_adv7511_set_v4l2_timings(xfb_adv7511->sd,
+						xfb_adv7511->var_screeninfo);
+
+					*(xfb_adv7511->xfb_flags) |= XYLONFB_FLAG_EDID_RDY;
+
+					wake_up_interruptible(xfb_adv7511->misc_wait);
+
+					if (xfb_adv7511->flags & ADV7511_FLAG_INIT)
+						complete(&xfb_adv7511->edid_done);
+					else
+						xylonfb_adv7511_update(xfb_adv7511->fbi);
 				}
-
-				fb_parse_edid(xfb_adv7511->edid,
-					xfb_adv7511->var_screeninfo);
-				xylonfb_adv7511_get_monspecs(xfb_adv7511->edid,
-					xfb_adv7511->monspecs,
-					xfb_adv7511->var_screeninfo);
-				xylonfb_adv7511_set_v4l2_timings(
-					xfb_adv7511->sd,
-					xfb_adv7511->var_screeninfo);
-
-				*(xfb_adv7511->xfb_flags) |=
-					XYLONFB_FLAG_EDID_RDY;
-
-				wake_up_interruptible(xfb_adv7511->misc_wait);
-
-				if (xfb_adv7511->flags & ADV7511_FLAG_INIT)
-					complete(&xfb_adv7511->edid_done);
-				else
-					xylonfb_adv7511_update(
-						xfb_adv7511->fbi);
 			}
+		} else {
+			*(xfb_adv7511->xfb_flags) |= XYLONFB_FLAG_EDID_RDY;
+			wake_up_interruptible(xfb_adv7511->misc_wait);
 		}
 		break;
 	default:
@@ -331,7 +328,7 @@ int xylonfb_adv7511_register(struct fb_info *fbi)
 	driver_devel("%s\n", __func__);
 
 	if (xfb_adv7511)
-		return 0;
+		return -EEXIST;
 
 	xfb_adv7511 = kzalloc(sizeof(struct xylonfb_adv7511), GFP_KERNEL);
 	if (!xfb_adv7511) {
@@ -382,8 +379,7 @@ int xylonfb_adv7511_register(struct fb_info *fbi)
 		goto error_subdev;
 	}
 
-	xfb_adv7511->irq_work_queue =
-		create_singlethread_workqueue(ADV7511_NAME);
+	xfb_adv7511->irq_work_queue = create_singlethread_workqueue(ADV7511_NAME);
 	if (xfb_adv7511->irq_work_queue == NULL) {
 		pr_err("xylonfb ADV7511 workqueue error\n");
 		goto error_subdev;

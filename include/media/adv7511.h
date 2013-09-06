@@ -21,6 +21,8 @@
 #ifndef ADV7511_H
 #define ADV7511_H
 
+#include <media/v4l2-subdev.h>
+
 /* notify events */
 #define ADV7511_MONITOR_DETECT 0
 #define ADV7511_EDID_DETECT 1
